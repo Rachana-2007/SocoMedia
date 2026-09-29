@@ -1,3 +1,6 @@
+The prototype working demo, and the hindsight usage: https://drive.google.com/file/d/1nifCNDkfBFJhUUnV95oVbsz3OMEpkJtY/view?usp=sharing
+
+
 # 🚀 SoCoMeDiA — AI Social Media Creative Director & Content OS
 
 <p align="center">
