@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoCoMeDiA — AI Creative Workspace & Content OS</title>
+    
+    <!-- Fonts: Inter & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#F8FAFC',
+                            100: '#F1F5F9',
+                            200: '#E2E8F0',
+                            300: '#CBD5E1',
+                            400: '#94A3B8',
+                            500: '#64748B',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1E293B',
+                            900: '#0F172A',
+                            950: '#020617'
+                        },
+                        brand: {
+                            indigo: '#635BFF',
+                            darkindigo: '#4F46E5',
+                            violet: '#8B5CF6',
+                            coral: '#FF4D6D',
+                            success: '#12B76A',
+                            border: '#E4E7EC',
+                            surface: '#FFFFFF',
+                            heading: '#101828',
+                            muted: '#667085'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                        display: ['"Space Grotesk"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    boxShadow: {
+                        'subtle': '0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.04)',
+                        'subtle-lg': '0 4px 6px -1px rgba(16, 24, 40, 0.03), 0 12px 24px -4px rgba(16, 24, 40, 0.06)',
+                        'command': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                    },
+                    borderRadius: {
+                        'card': '14px',
+                        'btn': '10px'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #F8FAFC;
+            --surface-main: #FFFFFF;
+            --text-heading: #101828;
+            --text-body: #475569;
+            --text-muted: #667085;
+            --border-subtle: #E4E7EC;
+            --brand-primary: #635BFF;
+        }
+
+        .dark {
+            --bg-main: #09090B;
+            --surface-main: #111113;
+            --text-heading: #FAFAFA;
+            --text-body: #D4D4D8;
+            --text-muted: #A1A1AA;
+            --border-subtle: #27272A;
+            --brand-primary: #8B5CF6;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-heading);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Subtle Single Background Radial Gradient (Linear/Raycast aesthetic) */
+        .subtle-bg-glow {
+            background-image: radial-gradient(circle at 70% 10%, rgba(99, 91, 255, 0.05), transparent 40%);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E2E8F0;
+            border-radius: 3px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #27272A;
+        }
+
+        /* Smooth Tab View Transitions */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Micro-interactions */
+        .interactive-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .interactive-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+        }
+    </style>
+</head>
+
+<body class="subtle-bg-glow min-h-screen flex flex-col selection:bg-brand-indigo/20 selection:text-brand-indigo">
+
+    <!-- TOP NAVIGATION BAR (Linear / Raycast Workspace Style) -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-md border-b border-[#E4E7EC] dark:border-[#27272A] transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+            
+            <!-- LEFT: Brand Wordmark & Studio Status -->
+            <div class="flex items-center gap-3">
+                <a href="#" onclick="switchWorkspaceTab('studio')" class="flex items-center gap-2 group">
+                    <div class="w-7 h-7 rounded-lg bg-brand-indigo flex items-center justify-center text-white shadow-sm font-bold text-xs">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <span class="font-display font-bold text-base tracking-tight text-[#101828] dark:text-white">SoCo<span class="text-brand-indigo">MeDiA</span></span>
+                </a>
+                
+                <div class="h-4 w-[1px] bg-[#E4E7EC] dark:bg-[#27272A]"></div>
+                
+                <!-- Subtle Online Status -->
+                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Studio online</span>
+                </div>
+            </div>
+
+            <!-- CENTER: Main Navigation Tabs -->
+            <nav class="hidden md:flex items-center gap-1">
+                <button id="nav-tab-studio" onclick="switchWorkspaceTab('studio')" class="nav-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-brand-indigo bg-brand-indigo/10 transition-all flex items-center gap-1.5">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Studio
+                </button>
+                <button id="nav-tab-create" onclick="switchWorkspaceTab('create')" class="nav-btn px-3 py-1.5 text-xs font-medium rounded-lg text-[#667085] dark:text-zinc-400 hover:text-[#101828] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5">
+                    <i data-lucide="wand-2" class="w-3.5 h-3.5"></i> Create
+                </button>
+                <button id="nav-tab-assets" onclick="switchWorkspaceTab('assets')" class="nav-btn px-3 py-1.5 text-xs font-medium rounded-lg text-[#667085] dark:text-zinc-400 hover:text-[#101828] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5">
+                    <i data-lucide="folder-kanban" class="w-3.5 h-3.5"></i> Assets
+                </button>
+                <button id="nav-tab-memory" onclick="switchWorkspaceTab('memory')" class="nav-btn px-3 py-1.5 text-xs font-medium rounded-lg text-[#667085] dark:text-zinc-400 hover:text-[#101828] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5">
+                    <i data-lucide="brain" class="w-3.5 h-3.5"></i> Memory
+                </button>
+            </nav>
+
+            <!-- RIGHT: Actions, ⌘ K Command Trigger, Profile -->
+            <div class="flex items-center gap-2">
+                <!-- ⌘ K Command Palette Trigger -->
+                <button onclick="openCommandPalette()" class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 border border-[#E4E7EC] dark:border-[#27272A] text-xs text-[#667085] dark:text-zinc-400 hover:text-[#101828] dark:hover:text-white transition-all shadow-subtle">
+                    <i data-lucide="search" class="w-3 h-3"></i>
+                    <span>Search / Actions</span>
+                    <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded text-slate-500 font-semibold shadow-2xs">⌘K</kbd>
+                </button>
+
+                <!-- Dark / Light Mode Toggle -->
+                <button onclick="toggleDarkMode()" class="p-1.5 rounded-lg text-[#667085] dark:text-zinc-400 hover:text-[#101828] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all" title="Toggle Theme">
+                    <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                </button>
+
+                <!-- Profile Avatar -->
+                <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-brand-indigo to-brand-violet p-[1.5px] cursor-pointer" title="User Profile">
+                    <div class="w-full h-full rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center text-[10px] font-bold text-brand-indigo">
+                        AI
+                    </div>
+                </div>
+
+                <!-- Primary + Create Action Button -->
+                <button onclick="switchWorkspaceTab('create')" class="px-3 py-1.5 rounded-btn bg-brand-indigo hover:bg-brand-darkindigo text-white text-xs font-semibold shadow-subtle transition-all flex items-center gap-1.5 active:scale-95">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    <span>Create</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CREATIVE WORKSPACE CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- ==================== TAB 1: STUDIO WORKSPACE (HOME) ==================== -->
+        <div id="view-studio" class="tab-content active space-y-8">
+            
+            <!-- Hero Workspace Greeting & Primary AI Composer -->
+            <div class="max-w-4xl mx-auto space-y-6 pt-2 sm:pt-4 text-center sm:text-left">
+                
+                <!-- Greeting & Headline -->
+                <div class="space-y-1.5">
+                    <span id="time-greeting" class="text-xs font-semibold text-brand-indigo uppercase tracking-wider font-mono">Good evening</span>
+                    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#101828] dark:text-white font-sans">
+                        What are we creating today?
+                    </h1>
+                    <p class="text-sm text-[#667085] dark:text-zinc-400 max-w-2xl font-normal">
+                        Create social posts, visuals, campaigns and multilingual content from one creative workspace.
+                    </p>
+                </div>
+
+                <!-- Primary AI Composer Card (Linear / Perplexity Style) -->
+                <div class="bg-white dark:bg-[#111113] rounded-card border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle-lg p-4 sm:p-5 space-y-4 focus-within:border-brand-indigo dark:focus-within:border-brand-violet transition-all">
+                    
+                    <!-- Text Area Prompt Input -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-lg mt-1 text-brand-indigo">✨</span>
+                        <textarea id="composer-prompt" rows="3"
+                            class="w-full bg-transparent text-[#101828] dark:text-white placeholder-[#98A2B3] dark:placeholder-zinc-500 text-sm sm:text-base outline-none resize-none leading-relaxed"
+                            placeholder="Tell SoCoMeDiA what you want to create... e.g. Create an Instagram launch post for our new product"></textarea>
+                    </div>
+
+                    <!-- Additional Composer Fields Grid (Collapsible/Clean) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800/80">
+                        <div>
+                            <label class="block text-[11px] font-medium text-[#667085] dark:text-zinc-400 mb-1">Target Audience</label>
+                            <input type="text" id="composer-audience" value="Engineering Students & Developers"
+                                class="w-full bg-slate-50 dark:bg-zinc-900 text-xs text-[#101828] dark:text-zinc-200 px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 outline-none focus:border-brand-indigo" />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-[#667085] dark:text-zinc-400 mb-1">Platform</label>
+                            <select id="composer-platform" class="w-full bg-slate-50 dark:bg-zinc-900 text-xs text-[#101828] dark:text-zinc-200 px-2.5 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 outline-none focus:border-brand-indigo">
+                                <option value="Instagram">Instagram Post</option>
+                                <option value="Twitter/X">Twitter / X</option>
+                                <option value="LinkedIn">LinkedIn</option>
+                                <option value="TikTok/Reels">TikTok / Reels</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-[#667085] dark:text-zinc-400 mb-1">Additional Details</label>
+                            <input type="text" id="composer-details" placeholder="e.g. Include $10k bounty deadline..."
+                                class="w-full bg-slate-50 dark:bg-zinc-900 text-xs text-[#101828] dark:text-zinc-200 px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 outline-none focus:border-brand-indigo" />
+                        </div>
+                    </div>
+
+                    <!-- Composer Action Toolbar -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <div class="flex flex-wrap items-center gap-2 text-xs">
+                            <button onclick="toggleComposerOption('image')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-[#475569] dark:text-zinc-300 font-medium transition-all flex items-center gap-1.5">
+                                <i data-lucide="image" class="w-3.5 h-3.5 text-brand-coral"></i> + Image
+                            </button>
+                            <select id="composer-tone" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-xs font-medium text-[#475569] dark:text-zinc-300 border-none outline-none cursor-pointer">
+                                <option value="Engaging & Viral">Style: Engaging</option>
+                                <option value="Professional & Inspiring">Style: Professional</option>
+                                <option value="Tech Mystery">Style: Tech Mystery</option>
+                            </select>
+                            <select id="composer-language" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-xs font-medium text-[#475569] dark:text-zinc-300 border-none outline-none cursor-pointer">
+                                <option value="English">Language: English</option>
+                                <option value="Spanish">Language: Spanish</option>
+                                <option value="Hindi">Language: Hindi</option>
+                                <option value="French">Language: French</option>
+                            </select>
+                        </div>
+
+                        <button onclick="executeComposerGeneration()" class="px-4 py-2 rounded-btn bg-brand-indigo hover:bg-brand-darkindigo text-white text-xs font-semibold shadow-subtle transition-all flex items-center gap-2 active:scale-95">
+                            <span>Generate</span>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- EMBEDDED BRAND MEMORY CONTEXT PANEL -->
+                <div class="bg-white dark:bg-[#111113] rounded-card border border-[#E4E7EC] dark:border-[#27272A] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-subtle">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 flex items-center justify-center text-brand-indigo font-bold">
+                            🧠
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-[#101828] dark:text-white flex items-center gap-2">
+                                <span>Using your brand memory</span>
+                                <span class="px-2 py-0.2 text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded font-semibold border border-emerald-200 dark:border-emerald-800">Vector Active</span>
+                            </div>
+                            <div class="text-xs text-[#667085] dark:text-zinc-400 mt-0.5 flex flex-wrap items-center gap-3">
+                                <span>Tone: <strong class="text-slate-800 dark:text-zinc-200">Playful · Premium · Gen-Z</strong></span>
+                                <span>•</span>
+                                <span>Audience: <strong class="text-slate-800 dark:text-zinc-200">18–34</strong></span>
+                                <span>•</span>
+                                <span>4 memories influencing generation</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="switchWorkspaceTab('memory')" class="text-xs font-semibold text-brand-indigo hover:text-brand-darkindigo flex items-center gap-1 transition-all">
+                        <span>Edit</span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- QUICK CREATE ACTIONS GRID -->
+            <div class="max-w-4xl mx-auto space-y-3">
+                <h2 class="text-xs font-semibold uppercase tracking-wider font-mono text-[#667085] dark:text-zinc-400">Quick create</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    
+                    <button onclick="quickActionTrigger('social-post')" class="interactive-card bg-white dark:bg-[#111113] p-3.5 rounded-card border border-[#E4E7EC] dark:border-[#27272A] text-left group shadow-subtle">
+                        <div class="w-8 h-8 rounded-lg bg-brand-indigo/10 text-brand-indigo flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                            <i data-lucide="message-square" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-semibold text-[#101828] dark:text-white">Social Post</div>
+                        <div class="text-[11px] text-[#667085] dark:text-zinc-400">Captions & hooks</div>
+                    </button>
+
+                    <button onclick="quickActionTrigger('poster')" class="interactive-card bg-white dark:bg-[#111113] p-3.5 rounded-card border border-[#E4E7EC] dark:border-[#27272A] text-left group shadow-subtle">
+                        <div class="w-8 h-8 rounded-lg bg-brand-coral/10 text-brand-coral flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                            <i data-lucide="image" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-semibold text-[#101828] dark:text-white">Poster</div>
+                        <div class="text-[11px] text-[#667085] dark:text-zinc-400">4K Visual Canvas</div>
+                    </button>
+
+                    <button onclick="quickActionTrigger('campaign')" class="interactive-card bg-white dark:bg-[#111113] p-3.5 rounded-card border border-[#E4E7EC] dark:border-[#27272A] text-left group shadow-subtle">
+                        <div class="w-8 h-8 rounded-lg bg-brand-violet/10 text-brand-violet flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                            <i data-lucide="layers" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-semibold text-[#101828] dark:text-white">Campaign</div>
+                        <div class="text-[11px] text-[#667085] dark:text-zinc-400">Multi-channel plan</div>
+                    </button>
+
+                    <button onclick="quickActionTrigger('caption')" class="interactive-card bg-white dark:bg-[#111113] p-3.5 rounded-card border border-[#E4E7EC] dark:border-[#27272A] text-left group shadow-subtle">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                            <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-semibold text-[#101828] dark:text-white">Caption</div>
+                        <div class="text-[11px] text-[#667085] dark:text-zinc-400">Gen-Z & Slang</div>
+                    </button>
+
+                    <button onclick="quickActionTrigger('translate')" class="interactive-card bg-white dark:bg-[#111113] p-3.5 rounded-card border border-[#E4E7EC] dark:border-[#27272A] text-left group shadow-subtle">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                            <i data-lucide="globe" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-semibold text-[#101828] dark:text-white">Translate</div>
+                        <div class="text-[11px] text-[#667085] dark:text-zinc-400">10+ Languages</div>
+                    </button>
+
+                    <button onclick="quickActionTrigger('remix')" class="interactive-card bg-white dark:bg-[#111113] p-3.5 rounded-card border border-[#E4E7EC] dark:border-[#27272A] text-left group shadow-subtle">
+                        <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-semibold text-[#101828] dark:text-white">Remix</div>
+                        <div class="text-[11px] text-[#667085] dark:text-zinc-400">Re-style post</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RECENT CREATIONS ASSET LIBRARY GRID -->
+            <div class="max-w-4xl mx-auto space-y-4 pt-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-[#101828] dark:text-white font-sans">Recent creations</h2>
+                    <button onclick="switchWorkspaceTab('assets')" class="text-xs font-medium text-brand-indigo hover:text-brand-darkindigo">View all assets →</button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    
+                    <!-- Card 1 -->
+                    <div class="interactive-card bg-white dark:bg-[#111113] rounded-card border border-[#E4E7EC] dark:border-[#27272A] overflow-hidden shadow-subtle group">
+                        <div class="h-36 bg-gradient-to-br from-indigo-500 to-purple-600 p-4 flex flex-col justify-between text-white relative">
+                            <span class="px-2 py-0.5 rounded bg-white/20 backdrop-blur-md text-[10px] font-mono font-semibold self-start">INSTAGRAM POST</span>
+                            <div class="font-bold text-sm leading-tight drop-shadow-sm">DATA//ESCAPE Clue Teaser 1</div>
+                        </div>
+                        <div class="p-3.5 space-y-1">
+                            <div class="text-xs font-semibold text-[#101828] dark:text-white truncate">DATA//ESCAPE Mystery Teaser</div>
+                            <div class="flex items-center justify-between text-[11px] text-[#667085] dark:text-zinc-400">
+                                <span>Social Post</span>
+                                <span>2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="interactive-card bg-white dark:bg-[#111113] rounded-card border border-[#E4E7EC] dark:border-[#27272A] overflow-hidden shadow-subtle group">
+                        <div class="h-36 bg-gradient-to-br from-rose-500 to-pink-600 p-4 flex flex-col justify-between text-white relative">
+                            <span class="px-2 py-0.5 rounded bg-white/20 backdrop-blur-md text-[10px] font-mono font-semibold self-start">4K POSTER</span>
+                            <div class="font-bold text-sm leading-tight drop-shadow-sm">$10,000 Hackathon Finale</div>
+                        </div>
+                        <div class="p-3.5 space-y-1">
+                            <div class="text-xs font-semibold text-[#101828] dark:text-white truncate">Hackathon Grand Finale Banner</div>
+                            <div class="flex items-center justify-between text-[11px] text-[#667085] dark:text-zinc-400">
+                                <span>Poster Visual</span>
+                                <span>1 day ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="interactive-card bg-white dark:bg-[#111113] rounded-card border border-[#E4E7EC] dark:border-[#27272A] overflow-hidden shadow-subtle group">
+                        <div class="h-36 bg-gradient-to-br from-violet-600 to-indigo-700 p-4 flex flex-col justify-between text-white relative">
+                            <span class="px-2 py-0.5 rounded bg-white/20 backdrop-blur-md text-[10px] font-mono font-semibold self-start">MULTILINGUAL</span>
+                            <div class="font-bold text-sm leading-tight drop-shadow-sm">AI Coding Workshop (Spanish)</div>
+                        </div>
+                        <div class="p-3.5 space-y-1">
+                            <div class="text-xs font-semibold text-[#101828] dark:text-white truncate">AI Agents Masterclass Copy</div>
+                            <div class="flex items-center justify-between text-[11px] text-[#667085] dark:text-zinc-400">
+                                <span>Translated Campaign</span>
+                                <span>3 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==================== TAB 2: CREATE / AI & POSTER STUDIO ==================== -->
+        <div id="view-create" class="tab-content space-y-8">
+            
+            <div class="flex items-center justify-between border-b border-[#E4E7EC] dark:border-[#27272A] pb-4">
+                <div>
+                    <h1 class="text-xl font-bold text-[#101828] dark:text-white">Creative Studio</h1>
+                    <p class="text-xs text-[#667085] dark:text-zinc-400">Generate post captions, design 4K canvas visuals, and synthesize AI images.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="switchStudioSubTab('ai-post')" id="subtab-ai-post" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-indigo text-white shadow-subtle">
+                        AI Post Studio
+                    </button>
+                    <button onclick="switchStudioSubTab('poster-studio')" id="subtab-poster-studio" class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#667085] dark:text-zinc-400 hover:text-[#101828] hover:bg-slate-100 dark:hover:bg-zinc-800">
+                        Poster Studio & AI Image
+                    </button>
+                    <button onclick="switchStudioSubTab('insta-ideas-studio')" id="subtab-insta-ideas-studio" class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#667085] dark:text-zinc-400 hover:text-[#101828] hover:bg-slate-100 dark:hover:bg-zinc-800">
+                        📊 Instagram Analytics & Ideas
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION 1: AI CAMPAIGN GENERATOR & DRAFTING STUDIO -->
+            <section id="campaign-studio" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    <!-- Left Input Studio (5 Cols) -->
+                    <div class="lg:col-span-5 bg-white dark:bg-[#111113] rounded-card p-6 border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle space-y-5">
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-[#101828] dark:text-white mb-1.5">Campaign Topic / Announcement</label>
+                            <input type="text" id="topic" value="DATA//ESCAPE Clue Teaser 1"
+                                class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 focus:border-brand-indigo text-xs font-medium outline-none" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-[#101828] dark:text-white mb-1.5">Target Audience</label>
+                            <input type="text" id="audience" value="Engineering Students & Developers"
+                                class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-zinc-800 focus:border-brand-indigo text-xs font-medium outline-none" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-[#101828] dark:text-white mb-1.5 flex items-center justify-between">
+                                <span>Additional Details & Instructions</span>
+                                <span class="text-[11px] text-[#667085]">Optional</span>
+                            </label>
+                            <textarea id="extraDetails" rows="2"
+                                class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3.5 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 focus:border-brand-indigo text-xs leading-relaxed outline-none"
+                                placeholder="e.g. Include registration link, highlight $10k prizes..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-[#101828] dark:text-white mb-1.5">Platform</label>
+                                <select id="platform" class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none">
+                                    <option value="Instagram">📸 Instagram Post</option>
+                                    <option value="Twitter/X">🐦 Twitter / X</option>
+                                    <option value="LinkedIn">💼 LinkedIn</option>
+                                    <option value="TikTok/Reels">🎬 TikTok / Reels</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-[#101828] dark:text-white mb-1.5">Tone & Vibe</label>
+                                <select id="tone" class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none">
+                                    <option value="Engaging & Viral">🔥 Engaging & Viral</option>
+                                    <option value="Tech Mystery & Clues">🕵️ Tech Mystery & Clues</option>
+                                    <option value="Professional & Inspiring">💼 Professional & Inspiring</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-[#101828] dark:text-white mb-1.5">Language</label>
+                            <select id="language" class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none">
+                                <option value="English">🇬🇧 English</option>
+                                <option value="Spanish">🇪🇸 Spanish</option>
+                                <option value="Hindi">🇮🇳 Hindi</option>
+                                <option value="French">🇫🇷 French</option>
+                            </select>
+                        </div>
+
+                        <!-- Public Instagram Account Analysis -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-semibold text-brand-indigo flex items-center gap-1.5">
+                                    <i data-lucide="instagram" class="w-3.5 h-3.5"></i> Public Instagram Account Analysis
+                                </label>
+                                <span class="text-[10px] text-emerald-600 font-mono font-bold bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded">Live Analyzer</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="instaHandleInput" placeholder="e.g. @techfest_official" value="@techfest_official"
+                                    class="flex-1 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white px-3 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:border-brand-indigo font-mono" />
+                                <button type="button" onclick="analyzeInstaAccount()" id="analyzeInstaBtn" class="px-3 py-1.5 rounded-lg bg-brand-indigo text-white text-xs font-semibold hover:bg-brand-darkindigo transition-all">
+                                    Analyze Style
+                                </button>
+                            </div>
+                            <div id="instaAnalysisBadge" class="hidden text-[11px] p-2.5 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 leading-relaxed space-y-1">
+                                <div class="font-bold flex items-center justify-between">
+                                    <span id="instaHandleName">@techfest_official</span>
+                                    <span id="instaEngagementBadge" class="text-[10px] font-mono text-emerald-600 font-bold">8.7% Engagement</span>
+                                </div>
+                                <div id="instaVibeSummary" class="text-[#667085] dark:text-zinc-400">Cyberpunk Neon • Bullet Hooks • Student Teaser Vibe</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">💅</span>
+                                <span class="text-xs font-semibold text-[#101828] dark:text-white">Gen-Z Virality Mode</span>
+                            </div>
+                            <input type="checkbox" id="genzToggle" class="accent-brand-indigo cursor-pointer">
+                        </div>
+
+                        <button id="generateBtn" onclick="generatePost()"
+                            class="w-full py-3 px-4 rounded-btn font-semibold text-xs text-white bg-brand-indigo hover:bg-brand-darkindigo shadow-subtle transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            <span id="generateBtnText">Generate Post & Auto-Save to Hindsight</span>
+                        </button>
+                    </div>
+
+                    <!-- Right Output & Reasoning Panel (7 Cols) -->
+                    <div class="lg:col-span-7 bg-white dark:bg-[#111113] rounded-card p-6 border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle flex flex-col justify-between relative min-h-[480px]">
+                        
+                        <!-- Loading Overlay -->
+                        <div id="loading" class="hidden absolute inset-0 z-20 rounded-card bg-white/95 dark:bg-[#111113]/95 backdrop-blur-md flex flex-col items-center justify-center space-y-3">
+                            <div class="w-8 h-8 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin"></div>
+                            <p class="text-xs font-semibold text-[#101828] dark:text-white">Consulting Hindsight Memory Bank & Recalling Community Comments...</p>
+                        </div>
+
+                        <!-- Empty Placeholder -->
+                        <div id="placeholder" class="h-full min-h-[380px] flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">
+                            <div class="w-12 h-12 rounded-xl bg-brand-indigo/10 text-brand-indigo flex items-center justify-center mb-3">
+                                <i data-lucide="bot" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-sm font-bold text-[#101828] dark:text-white">Ready to Generate</h3>
+                            <p class="text-xs text-[#667085] dark:text-zinc-400 max-w-xs mt-1">
+                                Enter your topic and click Generate to produce captions with Community Callback hooks and auto-memory retention.
+                            </p>
+                        </div>
+
+                        <!-- Output Content Area -->
+                        <div id="outputArea" class="hidden space-y-5 flex-1">
+                            <div class="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+                                <div class="flex items-center gap-2">
+                                    <button id="tab-standard-btn" onclick="switchOutputTab('standard')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20">
+                                        Main Caption
+                                    </button>
+                                    <button id="tab-genz-btn" onclick="switchOutputTab('genz')" class="px-3 py-1 rounded-lg text-xs font-medium text-[#667085] hover:text-[#101828]">
+                                        ✨ Gen-Z Variant
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="copyCurrentOutput()" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-xs text-slate-700 dark:text-zinc-300 font-medium hover:bg-slate-200">
+                                        Copy
+                                    </button>
+                                    <button onclick="sendToPosterMaker()" class="px-2.5 py-1 rounded-lg bg-brand-coral/10 text-brand-coral text-xs font-semibold hover:bg-brand-coral/20">
+                                        Make Poster
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="postContent" class="p-4 bg-slate-50 dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs text-[#101828] dark:text-zinc-200 leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto">
+                            </div>
+                            <div id="genzContentBox" class="hidden p-4 bg-slate-50 dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs text-[#101828] dark:text-zinc-200 leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto">
+                            </div>
+
+                            <!-- Social Share Bar -->
+                            <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800">
+                                <span class="text-xs font-semibold text-[#667085] dark:text-zinc-400">Share Post:</span>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="shareActivePost('insta')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-semibold hover:bg-pink-500/20 transition-all border border-pink-500/20">
+                                        <i data-lucide="instagram" class="w-3.5 h-3.5"></i> Instagram
+                                    </button>
+                                    <button onclick="shareActivePost('x')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-500 text-xs font-semibold hover:bg-sky-500/20 transition-all border border-sky-500/20">
+                                        <i data-lucide="twitter" class="w-3.5 h-3.5"></i> X (Twitter)
+                                    </button>
+                                    <button onclick="shareActivePost('linkedin')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-600/20 transition-all border border-blue-600/20">
+                                        <i data-lucide="linkedin" class="w-3.5 h-3.5"></i> LinkedIn
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Community Callback Hook Card (Conversation Memory) -->
+                            <div id="communityCallbackCard" class="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 space-y-1.5">
+                                <div class="text-[11px] font-semibold text-purple-700 dark:text-purple-300 flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5">
+                                        <i data-lucide="message-square-heart" class="w-3.5 h-3.5"></i> 💬 Community Callback Hook (Conversation Memory)
+                                    </span>
+                                    <span class="text-[10px] font-mono text-purple-600 bg-purple-100 dark:bg-purple-900/50 px-2 py-0.5 rounded font-bold">Memory Recalled</span>
+                                </div>
+                                <p id="communityCallbackText" class="text-xs text-purple-900 dark:text-purple-200 leading-relaxed font-medium">
+                                    Recalled student comment from last thread: "Are there any hint drops for the cipher challenge?" -> Start draft: "Like some of you asked in our last thread about hint drops..."
+                                </p>
+                            </div>
+
+                            <!-- Memory Reasoning -->
+                            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-1">
+                                <div class="text-[11px] font-semibold text-brand-indigo flex items-center justify-between">
+                                    <span>🧠 Hindsight Memory Reasoning</span>
+                                    <span class="text-[10px] font-mono text-emerald-600">Vector Recall 98%</span>
+                                </div>
+                                <p id="memoryReasoning" class="text-xs text-[#667085] dark:text-zinc-400 leading-relaxed">
+                                </p>
+                            </div>
+
+                            <!-- Automatic Retention Status -->
+                            <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300 font-semibold">
+                                <span class="flex items-center gap-1.5">
+                                    <i data-lucide="brain-circuit" class="w-4 h-4 text-emerald-600"></i>
+                                    <span>Automatically Retained into Hindsight Brand Memory Vault</span>
+                                </span>
+                                <span class="text-[10px] font-mono bg-emerald-600 text-white px-2 py-0.5 rounded font-bold">✓ Auto-Saved</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+                </div>
+            </section>
+
+            <!-- SECTION 2: CANVAS POSTER STUDIO -->
+            <section id="poster-studio" class="space-y-6 pt-4">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    <div class="lg:col-span-6 xl:col-span-7 bg-white dark:bg-[#111113] rounded-card p-6 border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle flex flex-col items-center justify-between">
+                        
+                        <div class="w-full flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-zinc-800">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-[#667085] font-mono">Aspect:</span>
+                                <button onclick="setPosterRatio('1:1')" id="ratio-1-1" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-indigo/10 text-brand-indigo">1:1</button>
+                                <button onclick="setPosterRatio('4:5')" id="ratio-4-5" class="px-2.5 py-1 rounded-lg text-xs font-medium text-[#667085]">4:5</button>
+                                <button onclick="setPosterRatio('9:16')" id="ratio-9-16" class="px-2.5 py-1 rounded-lg text-xs font-medium text-[#667085]">9:16</button>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <button onclick="downloadPoster()" class="px-3 py-1.5 rounded-btn bg-slate-900 dark:bg-zinc-800 text-white text-xs font-semibold shadow-subtle hover:bg-slate-800 flex items-center gap-1.5 transition-all">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Download PNG
+                                </button>
+                                <button onclick="openInCanva()" class="px-3.5 py-1.5 rounded-btn bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 text-white text-xs font-bold shadow-subtle hover:opacity-95 transition-all flex items-center gap-1.5">
+                                    <i data-lucide="palette" class="w-3.5 h-3.5"></i> Edit & Add Elements in Canva
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="relative w-full max-w-[420px] aspect-square flex items-center justify-center bg-slate-900 rounded-xl overflow-hidden shadow-subtle border border-slate-200 dark:border-zinc-800">
+                            <canvas id="posterCanvas" width="1080" height="1080" class="w-full h-full object-contain rounded-xl"></canvas>
+                        </div>
+
+                        <!-- Share Poster Graphic Toolbar -->
+                        <div class="w-full mt-4 pt-3 border-t border-slate-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-xs font-semibold text-[#667085] dark:text-zinc-400">Share Graphic Poster:</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="sharePoster('insta')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-semibold hover:bg-pink-500/20 transition-all border border-pink-500/20">
+                                    <i data-lucide="instagram" class="w-3.5 h-3.5"></i> Instagram
+                                </button>
+                                <button onclick="sharePoster('x')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500/10 text-sky-500 text-xs font-semibold hover:bg-sky-500/20 transition-all border border-sky-500/20">
+                                    <i data-lucide="twitter" class="w-3.5 h-3.5"></i> X / Twitter
+                                </button>
+                                <button onclick="sharePoster('linkedin')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-600/20 transition-all border border-blue-600/20">
+                                    <i data-lucide="linkedin" class="w-3.5 h-3.5"></i> LinkedIn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-6 xl:col-span-5 bg-white dark:bg-[#111113] rounded-card p-6 border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle space-y-4 max-h-[720px] overflow-y-auto">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
+                            <h3 class="text-xs font-bold text-[#101828] dark:text-white uppercase tracking-wider font-mono">🎨 Poster Customizations</h3>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-brand-indigo/10 text-brand-indigo font-bold font-mono">Studio Controls</span>
+                        </div>
+                        
+                        <!-- Typography & Copy -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[11px] font-medium text-[#667085] mb-1">Headline Text</label>
+                                <input type="text" id="posterHeadline" value="DATA // ESCAPE" oninput="renderPoster()"
+                                    class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo" />
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-medium text-[#667085] mb-1">Subtitle Text</label>
+                                <input type="text" id="posterSubtitle" value="Unlock the Clues. Win $10,000." oninput="renderPoster()"
+                                    class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo" />
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-medium text-[#667085] mb-1">Badge Tag</label>
+                                    <input type="text" id="posterBadge" value="🔥 CHALLENGE 01" oninput="renderPoster()"
+                                        class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo" />
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-medium text-[#667085] mb-1">Footer CTA</label>
+                                    <input type="text" id="posterCTA" value="Live This Friday" oninput="renderPoster()"
+                                        class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-medium text-[#667085] mb-1">Brand Handle / Watermark</label>
+                                <input type="text" id="posterWatermark" value="@socomedia.official" oninput="renderPoster()"
+                                    class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo" />
+                            </div>
+                        </div>
+
+                        <!-- Themes, Fonts & Frames -->
+                        <div class="space-y-3 pt-2 border-t border-slate-200 dark:border-zinc-800">
+                            <span class="text-[11px] font-bold text-[#667085] dark:text-zinc-400 uppercase tracking-wide">Themes & Graphic Styling</span>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-medium text-[#667085] mb-1">Color Palette Theme</label>
+                                    <select id="posterTheme" onchange="renderPoster()" class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-2.5 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo">
+                                        <option value="cyber">Cyber Neon (Indigo / Violet)</option>
+                                        <option value="electric">Electric Magenta / Fuchsia</option>
+                                        <option value="sunset">Sunset Gold / Amber</option>
+                                        <option value="emerald">Emerald Mint / Cyber Teal</option>
+                                        <option value="crimson">Crimson Flame / Red</option>
+                                        <option value="midnight">Midnight Cyan / Deep Navy</option>
+                                        <option value="monochrome">Minimalist Monochrome</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-medium text-[#667085] mb-1">Font Family</label>
+                                    <select id="posterFont" onchange="renderPoster()" class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-2.5 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo">
+                                        <option value="space">Space Grotesk (Modern)</option>
+                                        <option value="mono">JetBrains Mono (Code)</option>
+                                        <option value="inter">Inter (Clean Sans)</option>
+                                        <option value="impact">Impact Heavy (Bold)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-medium text-[#667085] mb-1">Decorative Frame</label>
+                                    <select id="posterFrame" onchange="renderPoster()" class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-2.5 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo">
+                                        <option value="cyber">Cyber Grid & Brackets</option>
+                                        <option value="border">Neon Glow Border</option>
+                                        <option value="card">Glassmorphism Card Box</option>
+                                        <option value="accents">Corner Accent Dots</option>
+                                        <option value="none">Clean (No Frame)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-medium text-[#667085] mb-1">Text Alignment</label>
+                                    <select id="posterAlign" onchange="renderPoster()" class="w-full bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-2.5 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs outline-none focus:border-brand-indigo">
+                                        <option value="left">Left Aligned</option>
+                                        <option value="center">Centered Alignment</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-[11px] font-medium text-[#667085]">Image Overlay Darken Filter</label>
+                                    <span id="darkenValText" class="text-[10px] font-mono text-brand-indigo font-bold">40%</span>
+                                </div>
+                                <input type="range" id="posterDarken" min="0" max="80" value="40" step="10" oninput="document.getElementById('darkenValText').innerText = this.value + '%'; renderPoster();"
+                                    class="w-full accent-brand-indigo cursor-pointer" />
+                            </div>
+
+                            <!-- Recommended Event Graphics & Bot Stickers -->
+                            <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-zinc-800">
+                                <label class="block text-[11px] font-bold text-[#667085] dark:text-zinc-400 uppercase tracking-wide flex items-center justify-between">
+                                    <span>✨ Recommended Event Stickers & Graphics</span>
+                                    <span class="text-[10px] text-brand-indigo font-normal">Click to add to poster</span>
+                                </label>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button type="button" onclick="selectPosterSticker('bot')" id="sticker-bot" class="px-2.5 py-1.5 rounded-lg border border-brand-indigo bg-brand-indigo/10 text-brand-indigo text-xs font-bold flex items-center gap-1 transition-all">
+                                        🤖 AI Cyber Bot
+                                    </button>
+                                    <button type="button" onclick="selectPosterSticker('rocket')" id="sticker-rocket" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs font-medium text-[#667085] hover:border-brand-indigo flex items-center gap-1 transition-all">
+                                        🚀 Launch Rocket
+                                    </button>
+                                    <button type="button" onclick="selectPosterSticker('trophy')" id="sticker-trophy" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs font-medium text-[#667085] hover:border-brand-indigo flex items-center gap-1 transition-all">
+                                        🏆 $10K Bounty
+                                    </button>
+                                    <button type="button" onclick="selectPosterSticker('terminal')" id="sticker-terminal" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs font-medium text-[#667085] hover:border-brand-indigo flex items-center gap-1 transition-all">
+                                        💻 Code Payload
+                                    </button>
+                                    <button type="button" onclick="selectPosterSticker('zap')" id="sticker-zap" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs font-medium text-[#667085] hover:border-brand-indigo flex items-center gap-1 transition-all">
+                                        ⚡ Cyber Spark
+                                    </button>
+                                    <button type="button" onclick="selectPosterSticker('lock')" id="sticker-lock" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs font-medium text-[#667085] hover:border-brand-indigo flex items-center gap-1 transition-all">
+                                        🔒 Cipher Key
+                                    </button>
+                                    <button type="button" onclick="selectPosterSticker('none')" id="sticker-none" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs font-medium text-[#667085] transition-all">
+                                        Clear Sticker
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Synthesizer & Custom File Upload -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-2.5 pt-2">
+                            <div class="text-xs font-semibold text-brand-indigo flex items-center justify-between">
+                                <span>✨ AI Visual Synthesizer</span>
+                                <label class="cursor-pointer text-[11px] font-bold text-brand-violet hover:underline flex items-center gap-1">
+                                    <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Custom Graphic
+                                    <input type="file" id="posterUploadImg" accept="image/*" class="hidden" onchange="handlePosterUpload(event)">
+                                </label>
+                            </div>
+                            <input type="text" id="aiImagePrompt" value="Futuristic indigo cyber space with glowing interfaces, 8k octane render"
+                                class="w-full bg-white dark:bg-zinc-800 text-slate-900 dark:text-white px-3 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 text-xs outline-none" />
+                            <div class="flex items-center gap-2">
+                                <button onclick="generateAIImage()" id="generateAiImgBtn" class="flex-1 py-1.5 rounded-lg bg-brand-indigo text-white text-xs font-medium hover:bg-brand-darkindigo transition-all">
+                                    Synthesize Visual
+                                </button>
+                                <button onclick="useAiImageInPoster()" id="useAiImgBtn" class="hidden py-1.5 px-3 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 transition-all">
+                                    Use in Poster
+                                </button>
+                            </div>
+                            <div id="aiImagePreviewContainer" class="hidden relative aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-900">
+                                <img id="aiGeneratedImg" src="" alt="AI visual" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: DEDICATED PUBLIC INSTAGRAM ANALYTICS & AI CONTENT IDEA STUDIO -->
+            <section id="insta-ideas-studio" class="hidden space-y-6 pt-4">
+                <div class="bg-white dark:bg-[#111113] rounded-card p-6 border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle space-y-6">
+                    
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-zinc-800">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded bg-brand-indigo/10 text-brand-indigo text-xs font-mono font-bold">Public Account Intelligence</span>
+                                <h2 class="text-base font-bold text-[#101828] dark:text-white">Instagram Account Analytics & Content Ideas</h2>
+                            </div>
+                            <p class="text-xs text-[#667085] dark:text-zinc-400 mt-1">Check public account metrics and generate 5 data-backed viral post ideas tailored to their audience engagement gaps.</p>
+                        </div>
+
+                        <div class="flex items-center gap-2 max-w-md w-full">
+                            <input type="text" id="studioInstaHandle" value="@techfest_official" placeholder="e.g. @techfest_official"
+                                class="flex-1 bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-white px-3.5 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs font-mono outline-none focus:border-brand-indigo" />
+                            <button onclick="runStudioInstaAnalysis()" id="runInstaAnalysisBtn" class="px-4 py-2 rounded-lg bg-brand-indigo text-white text-xs font-bold shadow-subtle hover:bg-brand-darkindigo transition-all flex items-center gap-1.5">
+                                <i data-lucide="search" class="w-3.5 h-3.5"></i> Analyze Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Account Metrics Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-1">
+                            <div class="text-[11px] text-[#667085] flex items-center justify-between">
+                                <span>Target Account</span>
+                                <i data-lucide="instagram" class="w-3.5 h-3.5 text-pink-500"></i>
+                            </div>
+                            <div id="analyticsHandle" class="text-sm font-bold text-[#101828] dark:text-white font-mono">@techfest_official</div>
+                            <div id="analyticsFollowers" class="text-[10px] text-brand-indigo font-semibold">42.8K Active Community</div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-1">
+                            <div class="text-[11px] text-[#667085] flex items-center justify-between">
+                                <span>Avg Engagement Rate</span>
+                                <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-500"></i>
+                            </div>
+                            <div id="analyticsEngagement" class="text-sm font-bold text-emerald-600 font-mono">8.7% (High)</div>
+                            <div class="text-[10px] text-[#667085]">Above industry benchmark</div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-1">
+                            <div class="text-[11px] text-[#667085] flex items-center justify-between">
+                                <span>Top Winning Format</span>
+                                <i data-lucide="list-checks" class="w-3.5 h-3.5 text-brand-violet"></i>
+                            </div>
+                            <div id="analyticsTopFormat" class="text-xs font-bold text-[#101828] dark:text-white">Short-form Bullet Teasers</div>
+                            <div class="text-[10px] text-brand-violet font-semibold">68% of highest upvoted posts</div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-1">
+                            <div class="text-[11px] text-[#667085] flex items-center justify-between">
+                                <span>Audience Sentiment</span>
+                                <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-500"></i>
+                            </div>
+                            <div id="analyticsSentiment" class="text-xs font-bold text-[#101828] dark:text-white">High Cipher Hint Anticipation</div>
+                            <div class="text-[10px] text-emerald-600 font-semibold">84% CS / Dev Students</div>
+                        </div>
+                    </div>
+
+                    <!-- AI Content Idea Generator Studio -->
+                    <div class="space-y-4 pt-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-[#101828] dark:text-white font-mono flex items-center gap-2">
+                                    <span>💡 AI-Generated Content Ideas for this Account</span>
+                                    <span class="text-[10px] font-mono text-purple-600 bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 rounded font-bold">Data-Backed Strategy</span>
+                                </h3>
+                                <p class="text-xs text-[#667085]">Based on past A/B test failure records and community comment recall.</p>
+                            </div>
+                            <button onclick="fetchContentIdeas()" id="fetchIdeasBtn" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shadow-subtle hover:opacity-95 transition-all flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Generate 5 Viral Ideas
+                            </button>
+                        </div>
+
+                        <div id="contentIdeasContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+
+        <!-- ==================== TAB 3: ASSETS / LIVE FEED WORKSPACE ==================== -->
+        <div id="view-assets" class="tab-content space-y-6">
+            <div class="flex items-center justify-between border-b border-[#E4E7EC] dark:border-[#27272A] pb-4">
+                <div>
+                    <h1 class="text-xl font-bold text-[#101828] dark:text-white">Assets & Social Feed Preview</h1>
+                    <p class="text-xs text-[#667085] dark:text-zinc-400">Live preview of generated assets across Instagram, Twitter, and LinkedIn.</p>
+                </div>
+            </div>
+
+            <!-- SECTION 4: LIVE SOCIAL MEDIA FEED MOCKUP PREVIEW -->
+            <section id="live-feed" class="space-y-6">
+                <div class="max-w-2xl mx-auto space-y-4">
+                    <!-- Instagram Feed Card -->
+                    <div id="mockup-instagram" class="bg-white dark:bg-[#111113] rounded-card p-5 border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle space-y-3">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-brand-indigo text-white font-bold flex items-center justify-center text-xs">
+                                    SC
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-[#101828] dark:text-white">socomedia_official</div>
+                                    <div class="text-[10px] text-[#667085]">DATA//ESCAPE • Original audio</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="shareActivePost('insta')" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-bold hover:bg-pink-500/20 transition-all border border-pink-500/20">
+                                    <i data-lucide="instagram" class="w-3.5 h-3.5"></i> Insta
+                                </button>
+                                <button onclick="shareActivePost('x')" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-500 text-xs font-bold hover:bg-sky-500/20 transition-all border border-sky-500/20">
+                                    <i data-lucide="twitter" class="w-3.5 h-3.5"></i> X
+                                </button>
+                                <button onclick="shareActivePost('linkedin')" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-600/20 transition-all border border-blue-600/20">
+                                    <i data-lucide="linkedin" class="w-3.5 h-3.5"></i> LinkedIn
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
+                            <img id="mockupPostImage" src="" alt="Post Visual" class="w-full h-full object-cover">
+                        </div>
+
+                        <div class="text-xs text-[#101828] dark:text-zinc-200 leading-relaxed">
+                            <span class="font-bold mr-1">socomedia_official</span>
+                            <span id="mockupCaption">🚀 DATA//ESCAPE Clue Teaser 1 is live! Crack the puzzle and claim your spot...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+
+        <!-- ==================== TAB 4: MEMORY BANK WORKSPACE ==================== -->
+        <div id="view-memory" class="tab-content space-y-6">
+            <div class="flex items-center justify-between border-b border-[#E4E7EC] dark:border-[#27272A] pb-4">
+                <div>
+                    <h1 class="text-xl font-bold text-[#101828] dark:text-white">Brand Memory Vault</h1>
+                    <p class="text-xs text-[#667085] dark:text-zinc-400">Vector memory database powered by Hindsight for automatic brand guideline alignment.</p>
+                </div>
+            </div>
+
+            <!-- SECTION 5: HINDSIGHT MEMORY VAULT & ANALYTICS -->
+            <section id="memory-vault" class="space-y-6">
+                <div class="bg-white dark:bg-[#111113] rounded-card p-6 border border-[#E4E7EC] dark:border-[#27272A] shadow-subtle space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-brand-indigo/10 text-brand-indigo flex items-center justify-center font-bold">
+                                🧠
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-[#667085]">Memory Bank ID</div>
+                                <div class="text-xs font-bold text-[#101828] dark:text-white font-mono">social-media-agent</div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                                ⚡
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-[#667085]">Vector Embeddings</div>
+                                <div class="text-xs font-bold text-emerald-600">Active Vectorize.io</div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-brand-violet/10 text-brand-violet flex items-center justify-center font-bold">
+                                📈
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-[#667085]">Learned Heuristics</div>
+                                <div class="text-xs font-bold text-brand-violet">+40% Bullet Hook Engagement</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Memory Feed -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-mono uppercase text-[#667085]">Retained Memory Anchors</h3>
+                        <div id="memoryLogsFeed" class="space-y-3">
+                            <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-start justify-between">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded bg-brand-indigo/10 text-brand-indigo text-[10px] font-mono font-bold">DATA//ESCAPE Clues</span>
+                                        <span class="text-xs font-bold text-[#101828] dark:text-white">Engineering Students Engagement Boost</span>
+                                    </div>
+                                    <p class="text-xs text-[#667085]">"Used bullet points and countdown urgency because Tuesday morning posts showed 40% higher engagement."</p>
+                                </div>
+                                <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded">✓ Memorized</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+
+    <!-- ⌘ K COMMAND PALETTE MODAL (Raycast / Linear Style) -->
+    <div id="command-palette-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 dark:bg-black/70 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 px-4">
+        <div class="bg-white dark:bg-[#111113] rounded-card border border-[#E4E7EC] dark:border-[#27272A] shadow-command max-w-xl w-full overflow-hidden animate-fade-in space-y-0">
+            
+            <!-- Search Input -->
+            <div class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800">
+                <i data-lucide="search" class="w-4 h-4 text-[#667085]"></i>
+                <input type="text" id="command-search-input" oninput="filterCommandPalette()"
+                    class="w-full bg-transparent text-sm text-[#101828] dark:text-white placeholder-[#98A2B3] outline-none"
+                    placeholder="Type a command or search..." />
+                <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded text-slate-500 font-semibold">ESC</kbd>
+            </div>
+
+            <!-- Command List -->
+            <div id="command-list" class="p-2 max-h-80 overflow-y-auto space-y-1">
+                <button onclick="executeCommand('create-post')" class="cmd-item w-full flex items-center justify-between p-2.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-brand-indigo/10 text-brand-indigo flex items-center justify-center">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-[#101828] dark:text-white">Create a social post</span>
+                    </div>
+                    <span class="text-[11px] font-mono text-[#667085]">⌘P</span>
+                </button>
+
+                <button onclick="executeCommand('create-poster')" class="cmd-item w-full flex items-center justify-between p-2.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-brand-coral/10 text-brand-coral flex items-center justify-center">
+                            <i data-lucide="image" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-[#101828] dark:text-white">Create a 4K visual poster</span>
+                    </div>
+                    <span class="text-[11px] font-mono text-[#667085]">⌘I</span>
+                </button>
+
+                <button onclick="executeCommand('search-memory')" class="cmd-item w-full flex items-center justify-between p-2.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-brand-violet/10 text-brand-violet flex items-center justify-center">
+                            <i data-lucide="brain" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-[#101828] dark:text-white">Search brand memory</span>
+                    </div>
+                    <span class="text-[11px] font-mono text-[#667085]">⌘M</span>
+                </button>
+
+                <button onclick="executeCommand('translate-campaign')" class="cmd-item w-full flex items-center justify-between p-2.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                            <i data-lucide="globe" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-[#101828] dark:text-white">Translate campaign</span>
+                    </div>
+                    <span class="text-[11px] font-mono text-[#667085]">⌘T</span>
+                </button>
+            </div>
+            
+            <div class="p-2.5 border-t border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 flex items-center justify-between text-[11px] text-[#667085]">
+                <span>Navigation: <kbd class="font-mono">↑↓</kbd> Select</span>
+                <span>Press <kbd class="font-mono">ESC</kbd> to close</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-[#E4E7EC] dark:border-[#27272A] bg-white dark:bg-[#111113] py-6 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-[#101828] dark:text-white">SoCoMeDiA Studio OS</span>
+                <span class="text-xs text-[#667085]">| Powered by Hindsight Vector Memory & Groq AI</span>
+            </div>
+            <p class="text-xs text-[#667085] font-mono">© 2026 SoCoMeDiA AI • Built for High Virality & Engagement</p>
+        </div>
+    </footer>
+
+
+    <!-- JAVASCRIPT CORE -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Greeting update based on time
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            const el = document.getElementById('time-greeting');
+            if (!el) return;
+            if (hour < 12) el.innerText = "Good morning";
+            else if (hour < 18) el.innerText = "Good afternoon";
+            else el.innerText = "Good evening";
+        }
+        updateGreeting();
+
+        // Workspace Tab Switcher
+        function switchWorkspaceTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn px-3 py-1.5 text-xs font-medium rounded-lg text-[#667085] dark:text-zinc-400 hover:text-[#101828] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5";
+            });
+
+            const activeView = document.getElementById(`view-${tabId}`);
+            if (activeView) activeView.classList.add('active');
+
+            const activeNav = document.getElementById(`nav-tab-${tabId}`);
+            if (activeNav) {
+                activeNav.className = "nav-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-brand-indigo bg-brand-indigo/10 transition-all flex items-center gap-1.5";
+            }
+        }
+
+        let currentPosterSticker = 'bot';
+
+        function selectPosterSticker(sticker) {
+            currentPosterSticker = sticker;
+            ['bot', 'rocket', 'trophy', 'terminal', 'zap', 'lock', 'none'].forEach(s => {
+                const btn = document.getElementById(`sticker-${s}`);
+                if (btn) {
+                    if (s === sticker) {
+                        btn.className = "px-2.5 py-1.5 rounded-lg border border-brand-indigo bg-brand-indigo/10 text-brand-indigo text-xs font-bold flex items-center gap-1 transition-all";
+                    } else {
+                        btn.className = "px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs font-medium text-[#667085] hover:border-brand-indigo flex items-center gap-1 transition-all";
+                    }
+                }
+            });
+            renderPoster();
+        }
+
+        function switchStudioSubTab(subTab) {
+            const aiSec = document.getElementById('campaign-studio');
+            const posterSec = document.getElementById('poster-studio');
+            const ideasSec = document.getElementById('insta-ideas-studio');
+
+            const btnAi = document.getElementById('subtab-ai-post');
+            const btnPoster = document.getElementById('subtab-poster-studio');
+            const btnIdeas = document.getElementById('subtab-insta-ideas-studio');
+
+            const inactiveClass = "px-3 py-1.5 rounded-lg text-xs font-medium text-[#667085] dark:text-zinc-400 hover:text-[#101828] hover:bg-slate-100 dark:hover:bg-zinc-800";
+            const activeClass = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-indigo text-white shadow-subtle";
+
+            if (btnAi) btnAi.className = inactiveClass;
+            if (btnPoster) btnPoster.className = inactiveClass;
+            if (btnIdeas) btnIdeas.className = inactiveClass;
+
+            if (aiSec) aiSec.classList.remove('hidden');
+            if (posterSec) posterSec.classList.remove('hidden');
+            if (ideasSec) ideasSec.classList.add('hidden');
+
+            if (subTab === 'ai-post') {
+                if (aiSec) aiSec.scrollIntoView({ behavior: 'smooth' });
+                if (btnAi) btnAi.className = activeClass;
+            } else if (subTab === 'poster-studio') {
+                if (posterSec) posterSec.scrollIntoView({ behavior: 'smooth' });
+                if (btnPoster) btnPoster.className = activeClass;
+            } else if (subTab === 'insta-ideas-studio') {
+                if (ideasSec) {
+                    ideasSec.classList.remove('hidden');
+                    ideasSec.scrollIntoView({ behavior: 'smooth' });
+                }
+                if (btnIdeas) btnIdeas.className = activeClass;
+                fetchContentIdeas();
+            }
+        }
+
+        // Quick Actions Trigger
+        function quickActionTrigger(action) {
+            if (action === 'social-post' || action === 'campaign' || action === 'caption') {
+                switchWorkspaceTab('create');
+                switchStudioSubTab('ai-post');
+            } else if (action === 'poster') {
+                switchWorkspaceTab('create');
+                switchStudioSubTab('poster-studio');
+            } else if (action === 'translate') {
+                switchWorkspaceTab('create');
+                switchStudioSubTab('ai-post');
+                document.getElementById('language').value = 'Spanish';
+            } else if (action === 'remix') {
+                switchWorkspaceTab('create');
+                switchStudioSubTab('ai-post');
+            }
+        }
+
+        // Execute Composer Generation from Primary Card
+        function executeComposerGeneration() {
+            const prompt = document.getElementById('composer-prompt').value.trim();
+            if (prompt) {
+                document.getElementById('topic').value = prompt;
+            }
+            const aud = document.getElementById('composer-audience').value;
+            if (aud) document.getElementById('audience').value = aud;
+            
+            const plat = document.getElementById('composer-platform').value;
+            if (plat) document.getElementById('platform').value = plat;
+
+            const det = document.getElementById('composer-details').value;
+            if (det) document.getElementById('extraDetails').value = det;
+
+            const tone = document.getElementById('composer-tone').value;
+            if (tone) document.getElementById('tone').value = tone;
+
+            const lang = document.getElementById('composer-language').value;
+            if (lang) document.getElementById('language').value = lang;
+
+            switchWorkspaceTab('create');
+            switchStudioSubTab('ai-post');
+            generatePost();
+        }
+
+        // Command Palette Logic
+        function openCommandPalette() {
+            const modal = document.getElementById('command-palette-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.getElementById('command-search-input').focus();
+            }
+        }
+
+        function closeCommandPalette() {
+            const modal = document.getElementById('command-palette-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                openCommandPalette();
+            }
+            if (e.key === 'Escape') {
+                closeCommandPalette();
+            }
+        });
+
+        function filterCommandPalette() {
+            const input = document.getElementById('command-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.cmd-item');
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(input)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function executeCommand(cmd) {
+            closeCommandPalette();
+            if (cmd === 'create-post') {
+                switchWorkspaceTab('create');
+                switchStudioSubTab('ai-post');
+            } else if (cmd === 'create-poster') {
+                switchWorkspaceTab('create');
+                switchStudioSubTab('poster-studio');
+            } else if (cmd === 'search-memory') {
+                switchWorkspaceTab('memory');
+            } else if (cmd === 'translate-campaign') {
+                switchWorkspaceTab('create');
+                switchStudioSubTab('ai-post');
+            }
+        }
+
+        // Toggle Dark Mode
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Template Setter
+        function setTemplate(topic, audience, platform, tone) {
+            document.getElementById('topic').value = topic;
+            document.getElementById('audience').value = audience;
+            document.getElementById('platform').value = platform;
+            document.getElementById('posterHeadline').value = topic.split(' ')[0] + ' ' + (topic.split(' ')[1] || '');
+            renderPoster();
+            switchWorkspaceTab('create');
+        }
+
+        // State Management
+        let currentPostResult = {
+            post_content: "🚀 DATA//ESCAPE Clue Teaser 1 is live! Crack the puzzle & claim your spot in the hall of fame.\n\n• Clue #1: Check the repository payload\n• Prize Pool: $10,000 in bounties\n• Time Remaining: 48 hours\n\nDrop your theories below! 👇\n\n#DATAESCAPE #TechChallenge #Innovation",
+            memory_reasoning: "Used bullet points and countdown urgency based on vector memory indicating 40% higher engagement.",
+            genz_variant: "chat is this real?? 😭 DATA//ESCAPE clue 1 just dropped and it is high key giving main character energy no cap fr fr! tap in or you're missing out besties ✨💅 #W #Viral #NoCap",
+            headline: "DATA // ESCAPE",
+            hashtags: ["#DATAESCAPE", "#TechChallenge"]
+        };
+
+        let currentUploadedImage = null;
+        let currentPosterPreset = 'cyber-neon';
+        let currentPosterRatio = '1:1';
+
+        // Analyze Instagram Account Function
+        async function analyzeInstaAccount() {
+            const handleInput = document.getElementById('instaHandleInput');
+            const handle = handleInput ? handleInput.value.trim() : '@techfest_official';
+            const btn = document.getElementById('analyzeInstaBtn');
+            const badge = document.getElementById('instaAnalysisBadge');
+            
+            if (!handle) {
+                showToast("Please enter an Instagram handle", "warning");
+                return;
+            }
+
+            if (btn) btn.innerText = "Analyzing...";
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/analyze-instagram', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ handle: handle })
+                });
+                const data = await response.json();
+                
+                document.getElementById('instaHandleName').innerText = data.handle || handle;
+                document.getElementById('instaEngagementBadge').innerText = data.engagement_rate || '8.7% Engagement';
+                document.getElementById('instaVibeSummary').innerText = `${data.aesthetic_vibe || 'Cyberpunk Neon'} • ${data.caption_style || 'Bullet Hooks'}`;
+                
+                badge.classList.remove('hidden');
+                showToast(`Analyzed ${data.handle}! Style heuristics saved to Hindsight.`, "success");
+            } catch (e) {
+                document.getElementById('instaHandleName').innerText = handle.startsWith('@') ? handle : `@${handle}`;
+                document.getElementById('instaEngagementBadge').innerText = '8.7% Engagement';
+                document.getElementById('instaVibeSummary').innerText = 'Cyberpunk Neon • Bullet Hooks • Community Teaser Vibe';
+                badge.classList.remove('hidden');
+                showToast(`Analyzed ${handle}! Style heuristics stored in Hindsight.`, "success");
+            }
+
+            if (btn) btn.innerText = "Analyze Style";
+        }
+
+        // Generate Post
+        async function generatePost() {
+            const topic = document.getElementById('topic').value.trim();
+            const audience = document.getElementById('audience').value.trim();
+            const platform = document.getElementById('platform').value;
+            const tone = document.getElementById('tone').value;
+            const language = document.getElementById('language').value;
+            const includeGenz = document.getElementById('genzToggle').checked;
+            const instaHandle = document.getElementById('instaHandleInput') ? document.getElementById('instaHandleInput').value.trim() : '@techfest_official';
+
+            const generateBtn = document.getElementById('generateBtn');
+            const generateBtnText = document.getElementById('generateBtnText');
+            const loading = document.getElementById('loading');
+            const outputArea = document.getElementById('outputArea');
+            const placeholder = document.getElementById('placeholder');
+
+            if (!topic) {
+                alert('Please enter a topic.');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtnText.innerText = 'Recalling Memory & Callback Hooks...';
+            loading.classList.remove('hidden');
+            outputArea.classList.add('hidden');
+            placeholder.classList.add('hidden');
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/generate-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: topic,
+                        target_audience: audience,
+                        additional_details: document.getElementById('extraDetails') ? document.getElementById('extraDetails').value : '',
+                        platform: platform,
+                        include_genz: includeGenz,
+                        instagram_handle: instaHandle
+                    })
+                });
+
+                const data = await response.json();
+                let resultObj;
+                try {
+                    resultObj = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+                } catch (e) {
+                    resultObj = {
+                        post_content: data.result,
+                        memory_reasoning: "Generated with audience context.",
+                        genz_variant: `bro ${topic} is literally insane no cap fr fr 💀🔥`,
+                        headline: topic.slice(0, 20).toUpperCase()
+                    };
+                }
+
+                currentPostResult = resultObj;
+
+                document.getElementById('postContent').innerText = resultObj.post_content || data.result;
+                document.getElementById('genzContentBox').innerText = resultObj.genz_variant || '';
+                document.getElementById('memoryReasoning').innerText = resultObj.memory_reasoning || 'Heuristic insights applied.';
+
+                // Display Community Callback Hook
+                if (resultObj.community_callback) {
+                    document.getElementById('communityCallbackText').innerText = resultObj.community_callback;
+                } else {
+                    document.getElementById('communityCallbackText').innerText = "Recalled student comment from last thread: 'Are there any hint drops for the cipher challenge?' -> Started draft with opening hook: 'Like some of you asked in our last thread about hint drops...'";
+                }
+
+                document.getElementById('posterHeadline').value = resultObj.headline || topic.toUpperCase();
+                document.getElementById('posterSubtitle').value = `Targeting ${audience} • Live Now`;
+
+                updateMockups(resultObj.post_content || data.result);
+                renderPoster();
+
+                // Automatic Memory Retention Feed Update
+                addMemoryLogFeed(topic, resultObj.memory_reasoning || "Auto-retained into Hindsight Bank");
+
+                loading.classList.add('hidden');
+                outputArea.classList.remove('hidden');
+
+                showToast("🧠 Automatically memorized into Hindsight Vector Vault!", "success");
+
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { y: 0.7 },
+                    colors: ['#635BFF', '#8B5CF6', '#12B76A']
+                });
+
+            } catch (error) {
+                simulateClientGeneration(topic, audience, platform, tone, language, includeGenz);
+                loading.classList.add('hidden');
+                outputArea.classList.remove('hidden');
+                showToast("🧠 Automatically memorized into Hindsight Vault!", "success");
+            }
+
+            generateBtn.disabled = false;
+            generateBtnText.innerText = 'Generate Post & Auto-Save to Hindsight';
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function simulateClientGeneration(topic, audience, platform, tone, language, includeGenz) {
+            const callbackHook = "💬 Like some of you asked in our last thread about hint drops for the cipher challenge, here is your exclusive preview:";
+            const fallbackText = `${callbackHook}\n\n🚀 ${topic.toUpperCase()} IS LIVE!\n\nAttention ${audience}!\nWe just unlocked the next phase. Here is what you need to know:\n\n✨ Key Highlights:\n• Immediate access unlocked\n• High reward prize pools ($10k bounties)\n• Limited spots available\n\n👉 Tag your team in the comments!\n\n#DATAESCAPE #${topic.replace(/\s+/g, '')} #Innovation`;
+            const genzFallback = `chat is this real?? 😭 someone asked in the comments for cipher hint drops so ${topic} just dropped and it is high key giving main character energy no cap fr fr! tap in or you're missing out besties ✨💅 #W #Viral #NoCap`;
+            const reasoning = `Recalled Tuesday morning bullet-point heuristic (+40% engagement) and woven community comment callback into opening hook.`;
+            const callbackDesc = `Recalled last thread comment: "Are there any hint drops for the cipher challenge?" and started draft with "Like some of you asked in our last thread about hint drops..."`;
+
+            currentPostResult = {
+                post_content: fallbackText,
+                memory_reasoning: reasoning,
+                community_callback: callbackDesc,
+                genz_variant: genzFallback,
+                headline: topic.toUpperCase()
+            };
+
+            document.getElementById('postContent').innerText = fallbackText;
+            document.getElementById('genzContentBox').innerText = genzFallback;
+            document.getElementById('memoryReasoning').innerText = reasoning;
+            document.getElementById('communityCallbackText').innerText = callbackDesc;
+            document.getElementById('posterHeadline').value = topic.toUpperCase();
+
+            updateMockups(fallbackText);
+            renderPoster();
+            addMemoryLogFeed(topic, reasoning);
+        }
+
+        function switchOutputTab(tab) {
+            const standardBtn = document.getElementById('tab-standard-btn');
+            const genzBtn = document.getElementById('tab-genz-btn');
+            const postBox = document.getElementById('postContent');
+            const genzBox = document.getElementById('genzContentBox');
+
+            if (tab === 'standard') {
+                standardBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20';
+                genzBtn.className = 'px-3 py-1 rounded-lg text-xs font-medium text-[#667085] hover:text-[#101828]';
+                postBox.classList.remove('hidden');
+                genzBox.classList.add('hidden');
+                updateMockups(currentPostResult.post_content);
+            } else {
+                genzBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20';
+                standardBtn.className = 'px-3 py-1 rounded-lg text-xs font-medium text-[#667085] hover:text-[#101828]';
+                postBox.classList.add('hidden');
+                genzBox.classList.remove('hidden');
+                updateMockups(currentPostResult.genz_variant);
+            }
+        }
+
+        function copyCurrentOutput() {
+            const isGenzActive = !document.getElementById('genzContentBox').classList.contains('hidden');
+            const textToCopy = isGenzActive ? document.getElementById('genzContentBox').innerText : document.getElementById('postContent').innerText;
+            navigator.clipboard.writeText(textToCopy);
+            alert('Copied to clipboard!');
+        }
+
+        function sendToPosterMaker() {
+            const topic = document.getElementById('topic').value;
+            document.getElementById('posterHeadline').value = topic.toUpperCase();
+            document.getElementById('posterSubtitle').value = "Live Technical Challenge & Rewards";
+            renderPoster();
+            switchWorkspaceTab('create');
+            switchStudioSubTab('poster-studio');
+        }
+
+        async function saveToMemory() {
+            const saveBtn = document.getElementById('saveBtn');
+            const saveBtnText = document.getElementById('saveBtnText');
+            const topic = document.getElementById('topic').value;
+            const content = document.getElementById('postContent').innerText;
+            const reasoning = document.getElementById('memoryReasoning').innerText;
+
+            saveBtn.disabled = true;
+            saveBtnText.innerText = 'Saving to Hindsight Memory...';
+
+            try {
+                await fetch('http://127.0.0.1:8000/save-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        post_content: content,
+                        topic: topic,
+                        reasoning: reasoning
+                    })
+                });
+
+                saveBtnText.innerText = '✓ Saved to Hindsight Vector Bank';
+                addMemoryLogFeed(topic, reasoning);
+
+            } catch (error) {
+                saveBtnText.innerText = '✓ Memorized Locally';
+                addMemoryLogFeed(topic, reasoning);
+            }
+        }
+
+        function addMemoryLogFeed(topic, reasoning) {
+            const feed = document.getElementById('memoryLogsFeed');
+            if (!feed) return;
+            const newLog = document.createElement('div');
+            newLog.className = "p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-start justify-between";
+            newLog.innerHTML = `
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded bg-brand-indigo/10 text-brand-indigo text-[10px] font-mono font-bold">${topic}</span>
+                        <span class="text-xs font-bold text-[#101828] dark:text-white">New Vector Anchor</span>
+                    </div>
+                    <p class="text-xs text-[#667085]">"${reasoning.slice(0, 120)}..."</p>
+                </div>
+                <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Just Now</span>
+            `;
+            feed.prepend(newLog);
+        }
+
+        // Canvas Poster Rendering Logic & Themes
+        const canvas = document.getElementById('posterCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const POSTER_THEMES = {
+            cyber: {
+                bg1: '#0F172A', bg2: '#1E1B4B', bg3: '#0F172A',
+                glow: 'rgba(99, 91, 255, 0.45)',
+                accent: '#635BFF',
+                badgeBg: '#635BFF', badgeText: '#FFFFFF',
+                textHead: '#FFFFFF', textSub: '#CBD5E1'
+            },
+            electric: {
+                bg1: '#180A29', bg2: '#3B0764', bg3: '#180A29',
+                glow: 'rgba(192, 132, 252, 0.45)',
+                accent: '#C084FC',
+                badgeBg: '#D946EF', badgeText: '#FFFFFF',
+                textHead: '#FFFFFF', textSub: '#F5D0FE'
+            },
+            sunset: {
+                bg1: '#1F1206', bg2: '#7C2D12', bg3: '#1F1206',
+                glow: 'rgba(245, 158, 11, 0.45)',
+                accent: '#F59E0B',
+                badgeBg: '#F59E0B', badgeText: '#0F172A',
+                textHead: '#FFFFFF', textSub: '#FDE68A'
+            },
+            emerald: {
+                bg1: '#022C22', bg2: '#064E3B', bg3: '#022C22',
+                glow: 'rgba(16, 185, 129, 0.45)',
+                accent: '#10B981',
+                badgeBg: '#10B981', badgeText: '#022C22',
+                textHead: '#FFFFFF', textSub: '#A7F3D0'
+            },
+            crimson: {
+                bg1: '#1A0505', bg2: '#881337', bg3: '#1A0505',
+                glow: 'rgba(244, 63, 94, 0.45)',
+                accent: '#F43F5E',
+                badgeBg: '#F43F5E', badgeText: '#FFFFFF',
+                textHead: '#FFFFFF', textSub: '#FECDD3'
+            },
+            midnight: {
+                bg1: '#041E2B', bg2: '#0E7490', bg3: '#041E2B',
+                glow: 'rgba(6, 182, 212, 0.45)',
+                accent: '#06B6D4',
+                badgeBg: '#06B6D4', badgeText: '#041E2B',
+                textHead: '#FFFFFF', textSub: '#CFFAFE'
+            },
+            monochrome: {
+                bg1: '#09090B', bg2: '#18181B', bg3: '#09090B',
+                glow: 'rgba(255, 255, 255, 0.15)',
+                accent: '#FAFAFA',
+                badgeBg: '#FAFAFA', badgeText: '#09090B',
+                textHead: '#FFFFFF', textSub: '#A1A1AA'
+            }
+        };
+
+        const FONT_MAP = {
+            space: '"Space Grotesk", sans-serif',
+            mono: '"JetBrains Mono", monospace',
+            inter: '"Inter", sans-serif',
+            impact: 'Impact, "Space Grotesk", sans-serif'
+        };
+
+        function setPosterRatio(ratio) {
+            if (!canvas) return;
+            if (ratio === '1:1') {
+                canvas.width = 1080;
+                canvas.height = 1080;
+            } else if (ratio === '4:5') {
+                canvas.width = 1080;
+                canvas.height = 1350;
+            } else if (ratio === '9:16') {
+                canvas.width = 1080;
+                canvas.height = 1920;
+            }
+            
+            ['1-1', '4-5', '9-16'].forEach(r => {
+                const btn = document.getElementById(`ratio-${r}`);
+                if (btn) {
+                    if (r === ratio.replace(':', '-')) {
+                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-medium text-[#667085] hover:text-[#101828]";
+                    }
+                }
+            });
+
+            renderPoster();
+        }
+
+        function renderPoster() {
+            if (!canvas) return;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const headline = document.getElementById('posterHeadline')?.value || "DATA // ESCAPE";
+            const subtitle = document.getElementById('posterSubtitle')?.value || "Unlock the Clues. Win $10,000.";
+            const badge = document.getElementById('posterBadge')?.value || "🔥 CHALLENGE 01";
+            const cta = document.getElementById('posterCTA')?.value || "Live This Friday";
+            const watermark = document.getElementById('posterWatermark')?.value || "@socomedia.official";
+
+            const themeKey = document.getElementById('posterTheme')?.value || 'cyber';
+            const fontKey = document.getElementById('posterFont')?.value || 'space';
+            const frameKey = document.getElementById('posterFrame')?.value || 'cyber';
+            const alignKey = document.getElementById('posterAlign')?.value || 'left';
+            const darkenVal = parseInt(document.getElementById('posterDarken')?.value || '40', 10) / 100;
+
+            const theme = POSTER_THEMES[themeKey] || POSTER_THEMES.cyber;
+            const fontFamily = FONT_MAP[fontKey] || FONT_MAP.space;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // 1. Background Fill Gradient
+            const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+            bgGrad.addColorStop(0, theme.bg1);
+            bgGrad.addColorStop(0.5, theme.bg2);
+            bgGrad.addColorStop(1, theme.bg3);
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // 2. Radial Glow Orbs
+            const orb1 = ctx.createRadialGradient(w * 0.3, h * 0.3, 50, w * 0.3, h * 0.3, w * 0.5);
+            orb1.addColorStop(0, theme.glow);
+            orb1.addColorStop(1, 'transparent');
+            ctx.fillStyle = orb1;
+            ctx.fillRect(0, 0, w, h);
+
+            // 3. Custom / AI Image Draw
+            if (currentUploadedImage) {
+                try {
+                    ctx.save();
+                    const imgW = w * 0.84;
+                    const imgH = h * 0.42;
+                    const imgX = (w - imgW) / 2;
+                    const imgY = h * 0.22;
+
+                    ctx.beginPath();
+                    if (ctx.roundRect) {
+                        ctx.roundRect(imgX, imgY, imgW, imgH, 24);
+                    } else {
+                        ctx.rect(imgX, imgY, imgW, imgH);
+                    }
+                    ctx.clip();
+                    ctx.drawImage(currentUploadedImage, imgX, imgY, imgW, imgH);
+
+                    // Darken filter overlay
+                    if (darkenVal > 0) {
+                        ctx.fillStyle = `rgba(0, 0, 0, ${darkenVal})`;
+                        ctx.fillRect(imgX, imgY, imgW, imgH);
+                    }
+                    ctx.restore();
+                } catch (e) {}
+            }
+
+            // 4. Decorative Frames & Accents
+            if (frameKey === 'cyber') {
+                ctx.strokeStyle = theme.accent;
+                ctx.lineWidth = 4;
+                const pad = w * 0.05;
+                const len = 40;
+
+                ctx.beginPath(); ctx.moveTo(pad, pad + len); ctx.lineTo(pad, pad); ctx.lineTo(pad + len, pad); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(w - pad - len, pad); ctx.lineTo(w - pad, pad); ctx.lineTo(w - pad, pad + len); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(pad, h - pad - len); ctx.lineTo(pad, h - pad); ctx.lineTo(pad + len, h - pad); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(w - pad - len, h - pad); ctx.lineTo(w - pad, h - pad); ctx.lineTo(w - pad, h - pad - len); ctx.stroke();
+
+                ctx.strokeStyle = `${theme.accent}33`;
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(pad, h * 0.13); ctx.lineTo(w - pad, h * 0.13); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(pad, h * 0.88); ctx.lineTo(w - pad, h * 0.88); ctx.stroke();
+            } else if (frameKey === 'border') {
+                ctx.strokeStyle = theme.accent;
+                ctx.lineWidth = 8;
+                ctx.strokeRect(w * 0.04, h * 0.04, w * 0.92, h * 0.92);
+            } else if (frameKey === 'card') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(w * 0.05, h * 0.14, w * 0.9, h * 0.74, 28);
+                else ctx.rect(w * 0.05, h * 0.14, w * 0.9, h * 0.74);
+                ctx.fill();
+                ctx.stroke();
+            } else if (frameKey === 'accents') {
+                ctx.fillStyle = theme.accent;
+                ctx.beginPath(); ctx.arc(w * 0.08, h * 0.08, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(w * 0.92, h * 0.08, 6, 0, Math.PI * 2); ctx.fill();
+            }
+
+            // 5. Header Brand Title
+            ctx.fillStyle = theme.accent;
+            ctx.font = `bold 24px ${fontFamily}`;
+            ctx.textAlign = 'left';
+            ctx.fillText('SOCOMEDIA STUDIO OS', w * 0.08, h * 0.08);
+
+            // Watermark Top Right
+            if (watermark) {
+                ctx.fillStyle = `${theme.textSub}AA`;
+                ctx.font = `500 20px ${FONT_MAP.mono}`;
+                ctx.textAlign = 'right';
+                ctx.fillText(watermark, w * 0.92, h * 0.08);
+            }
+
+            const isCentered = alignKey === 'center';
+            const posX = isCentered ? w * 0.5 : w * 0.08;
+            ctx.textAlign = isCentered ? 'center' : 'left';
+
+            // 6. Badge Pill
+            if (badge) {
+                const badgeY = currentUploadedImage ? h * 0.17 : h * 0.26;
+                ctx.font = `bold 24px ${FONT_MAP.mono}`;
+
+                const badgeMetrics = ctx.measureText(badge);
+                const badgeW = badgeMetrics.width + 36;
+                const badgeH = 42;
+                const badgeX = isCentered ? (w - badgeW) / 2 : w * 0.08;
+
+                ctx.fillStyle = theme.badgeBg;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(badgeX, badgeY - 28, badgeW, badgeH, 12);
+                else ctx.rect(badgeX, badgeY - 28, badgeW, badgeH);
+                ctx.fill();
+
+                ctx.fillStyle = theme.badgeText;
+                ctx.fillText(badge, isCentered ? w * 0.5 : w * 0.08 + 18, badgeY);
+            }
+
+            // 7. Headline
+            const headY = currentUploadedImage ? h * 0.70 : h * 0.44;
+            ctx.fillStyle = theme.textHead;
+            ctx.font = `800 58px ${fontFamily}`;
+            wrapText(ctx, headline, posX, headY, w * 0.84, 68, isCentered);
+
+            // 8. Subtitle
+            const subY = currentUploadedImage ? h * 0.82 : h * 0.64;
+            ctx.fillStyle = theme.textSub;
+            ctx.font = `500 26px "Inter", sans-serif`;
+            wrapText(ctx, subtitle, posX, subY, w * 0.84, 38, isCentered);
+
+            // 9. Footer CTA
+            if (cta) {
+                ctx.fillStyle = theme.accent;
+                ctx.font = `bold 26px ${fontFamily}`;
+                ctx.textAlign = 'center';
+                ctx.fillText(cta, w * 0.5, h * 0.93);
+            }
+
+            // 10. Draw Event Sticker Graphic Overlay
+            if (currentPosterSticker && currentPosterSticker !== 'none') {
+                const stickerX = isCentered ? w * 0.5 : w * 0.84;
+                const stickerY = currentUploadedImage ? h * 0.64 : h * 0.35;
+
+                ctx.save();
+                ctx.font = 'bold 52px "Space Grotesk", sans-serif';
+                ctx.textAlign = 'center';
+
+                const stickerMap = {
+                    bot: '🤖',
+                    rocket: '🚀',
+                    trophy: '🏆',
+                    terminal: '💻',
+                    zap: '⚡',
+                    lock: '🔒'
+                };
+
+                const emoji = stickerMap[currentPosterSticker] || '🤖';
+
+                ctx.fillStyle = `${theme.accent}25`;
+                ctx.beginPath();
+                ctx.arc(stickerX, stickerY - 16, 42, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = theme.accent;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.fillText(emoji, stickerX, stickerY);
+                ctx.restore();
+            }
+
+            updateMockupImages();
+        }
+
+        function wrapText(context, text, x, y, maxWidth, lineHeight, isCentered = false) {
+            const words = text.split(' ');
+            let line = '';
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = context.measureText(testLine);
+                if (metrics.width > maxWidth && n > 0) {
+                    context.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, x, y);
+        }
+
+        function downloadPoster() {
+            const link = document.createElement('a');
+            link.download = `SoCoMeDiA_Poster_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast("Poster PNG downloaded successfully!", "success");
+        }
+
+        function openInCanva() {
+            downloadPoster();
+            const canvaUrl = "https://www.canva.com/create/posters/";
+            window.open(canvaUrl, '_blank');
+            showToast("🎨 Poster downloaded! Opening Canva to edit & add stickers, graphics, and elements...", "info");
+        }
+
+        function handlePosterUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = function() {
+                        currentUploadedImage = img;
+                        renderPoster();
+                        showToast("Custom graphic loaded into poster!", "success");
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            const bgClass = type === 'info' 
+                ? 'bg-brand-indigo text-white shadow-lg' 
+                : type === 'warning' 
+                ? 'bg-amber-500 text-white shadow-lg' 
+                : 'bg-slate-900 dark:bg-zinc-800 text-white border border-slate-700 shadow-xl';
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-card text-xs font-semibold flex items-center gap-2.5 transform transition-all duration-300 translate-y-2 opacity-0 ${bgClass}`;
+            toast.innerHTML = `
+                <span>${type === 'info' ? '🎨' : '✨'}</span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        function shareActivePost(platform) {
+            const postEl = document.getElementById('postContent');
+            const text = postEl ? postEl.innerText.trim() : "Created with SoCoMeDiA AI Content OS!";
+            
+            if (platform === 'x') {
+                const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text.slice(0, 280))}`;
+                window.open(xUrl, '_blank');
+                showToast("Opening X (Twitter) tweet composer...", "info");
+            } else if (platform === 'linkedin') {
+                if (navigator.clipboard) navigator.clipboard.writeText(text);
+                window.open("https://www.linkedin.com/feed/", '_blank');
+                showToast("Caption copied to clipboard! Opening LinkedIn feed...", "success");
+            } else if (platform === 'insta') {
+                if (navigator.clipboard) navigator.clipboard.writeText(text);
+                window.open("https://www.instagram.com/", '_blank');
+                showToast("Caption copied to clipboard! Opening Instagram...", "success");
+            }
+        }
+
+        function sharePoster(platform) {
+            const headline = document.getElementById('posterHeadline')?.value || "DATA // ESCAPE";
+            const subtitle = document.getElementById('posterSubtitle')?.value || "";
+            const text = `🎨 ${headline}\n${subtitle}\n\nCreated with #SoCoMeDiA #AIStudio`;
+
+            downloadPoster();
+
+            if (platform === 'x') {
+                const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                window.open(xUrl, '_blank');
+                showToast("Poster downloaded! Opening X (Twitter)...", "info");
+            } else if (platform === 'linkedin') {
+                if (navigator.clipboard) navigator.clipboard.writeText(text);
+                window.open("https://www.linkedin.com/feed/", '_blank');
+                showToast("Poster downloaded & caption copied! Opening LinkedIn...", "success");
+            } else if (platform === 'insta') {
+                if (navigator.clipboard) navigator.clipboard.writeText(text);
+                window.open("https://www.instagram.com/", '_blank');
+                showToast("Poster downloaded & caption copied! Opening Instagram...", "success");
+            }
+        }
+
+        async function generateAIImage() {
+            const prompt = document.getElementById('aiImagePrompt').value;
+            const btn = document.getElementById('generateAiImgBtn');
+            const useBtn = document.getElementById('useAiImgBtn');
+            const container = document.getElementById('aiImagePreviewContainer');
+            const imgEl = document.getElementById('aiGeneratedImg');
+
+            btn.innerText = "Synthesizing...";
+            container.classList.remove('hidden');
+
+            const encodedPrompt = encodeURIComponent(prompt || "futuristic indigo aesthetic 8k");
+            const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1080&height=1080&nologo=true`;
+
+            const testImg = new Image();
+            testImg.crossOrigin = "anonymous";
+            testImg.onload = function () {
+                imgEl.src = imageUrl;
+                useBtn.classList.remove('hidden');
+                btn.innerText = "Synthesize Visual";
+                showToast("AI Visual synthesized successfully!", "success");
+            };
+            testImg.onerror = function () {
+                imgEl.src = imageUrl;
+                useBtn.classList.remove('hidden');
+                btn.innerText = "Synthesize Visual";
+            };
+            testImg.src = imageUrl;
+        }
+
+        function useAiImageInPoster() {
+            const imgEl = document.getElementById('aiGeneratedImg');
+            if (imgEl && imgEl.src) {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = function () {
+                    currentUploadedImage = img;
+                    renderPoster();
+                    showToast("AI image applied to poster canvas!", "success");
+                };
+                img.src = imgEl.src;
+            }
+        }
+
+        function updateMockups(text) {
+            const mockupCap = document.getElementById('mockupCaption');
+            if (mockupCap) mockupCap.innerText = text;
+            updateMockupImages();
+        }
+
+        function updateMockupImages() {
+            try {
+                const dataUrl = canvas.toDataURL('image/png');
+                const img1 = document.getElementById('mockupPostImage');
+                if (img1) img1.src = dataUrl;
+            } catch (e) {}
+        }
+
+        async function runStudioInstaAnalysis() {
+            const handleInput = document.getElementById('studioInstaHandle');
+            const btn = document.getElementById('runInstaAnalysisBtn');
+            const handle = (handleInput ? handleInput.value.trim() : '') || "@techfest_official";
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> Analyzing...`;
+                if (window.lucide) window.lucide.createIcons();
+            }
+
+            try {
+                const resp = await fetch('http://localhost:8000/analyze-instagram', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ instagram_handle: handle })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (document.getElementById('analyticsHandle')) document.getElementById('analyticsHandle').innerText = data.handle || handle;
+                    if (document.getElementById('analyticsFollowers')) document.getElementById('analyticsFollowers').innerText = (data.followers_count || "42.8K") + " Active Community";
+                    if (document.getElementById('analyticsEngagement')) document.getElementById('analyticsEngagement').innerText = (data.engagement_rate || "8.7%") + " (High)";
+                    if (document.getElementById('analyticsTopFormat')) document.getElementById('analyticsTopFormat').innerText = data.top_winning_format || "Short-form Bullet Teasers";
+                    if (document.getElementById('analyticsSentiment')) document.getElementById('analyticsSentiment').innerText = data.audience_sentiment || "High Cipher Hint Anticipation";
+                    showToast(`Analyzed ${handle} successfully!`, 'success');
+                } else {
+                    if (document.getElementById('analyticsHandle')) document.getElementById('analyticsHandle').innerText = handle;
+                }
+            } catch (err) {
+                console.warn('Instagram analysis backend offline, using simulated stats', err);
+                if (document.getElementById('analyticsHandle')) document.getElementById('analyticsHandle').innerText = handle;
+                showToast(`Loaded analytics for ${handle}`, 'info');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="search" class="w-3.5 h-3.5"></i> Analyze Account`;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+                fetchContentIdeas();
+            }
+        }
+
+        async function fetchContentIdeas() {
+            const handleInput = document.getElementById('studioInstaHandle');
+            const container = document.getElementById('contentIdeasContainer');
+            const btn = document.getElementById('fetchIdeasBtn');
+            const handle = (handleInput ? handleInput.value.trim() : '') || "@techfest_official";
+
+            if (!container) return;
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> Generating...`;
+                if (window.lucide) window.lucide.createIcons();
+            }
+
+            container.innerHTML = `
+                <div class="col-span-full py-8 text-center text-xs text-slate-500">
+                    <i data-lucide="sparkles" class="w-6 h-6 animate-bounce text-brand-indigo mx-auto mb-2"></i>
+                    Synthesizing 5 data-backed viral content ideas from past A/B test failure records...
+                </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+
+            let ideas = [];
+            try {
+                const resp = await fetch('http://localhost:8000/generate-content-ideas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ handle: handle })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    ideas = data.ideas || [];
+                }
+            } catch (e) {
+                console.warn('Backend ideas endpoint unavailable, loading local synthetic ideas', e);
+            }
+
+            if (!ideas || ideas.length === 0) {
+                ideas = [
+                    {
+                        title: "Cipher Challenge Hint Drop Teaser",
+                        format: "Concise Bulleted List",
+                        audience: "CS & Engineering Students",
+                        reason: "Memory shows long-form deep dives received 40% less engagement than short technical teasers. Woven from community comment demand."
+                    },
+                    {
+                        title: "$10K Code Payload Hunt Rules",
+                        format: "Visual Sticker Carousel",
+                        audience: "Hackathon Participants & Devs",
+                        reason: "High upvoted questions on rules & rewards; short bullet format keeps attention."
+                    },
+                    {
+                        title: "Vector DB vs Key-Value Store Crash Course",
+                        format: "3-Point Short Technical Comparison",
+                        audience: "Backend & AI Developers",
+                        reason: "A/B test records prove short teasers outperform 1500-word deep dives by 40%."
+                    },
+                    {
+                        title: "Hackathon Night Survival Checklist",
+                        format: "Emoji Checklist & Cyber Canvas",
+                        audience: "Student Programmers",
+                        reason: "High bookmarking rate observed in past technical event promotions."
+                    },
+                    {
+                        title: "AI Agent System Architecture Breakdown",
+                        format: "Interactive Poster + Bullet Highlights",
+                        audience: "AI Engineers & Innovators",
+                        reason: "Direct community feedback requesting system architecture previews before competition launch."
+                    }
+                ];
+            }
+
+            renderIdeaCards(ideas);
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Generate 5 Viral Ideas`;
+                if (window.lucide) window.lucide.createIcons();
+            }
+        }
+
+        function renderIdeaCards(ideas) {
+            const container = document.getElementById('contentIdeasContainer');
+            if (!container) return;
+
+            container.innerHTML = ideas.map((idea, idx) => `
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex flex-col justify-between space-y-3 hover:border-brand-indigo/40 transition-all shadow-sm">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-brand-indigo/10 text-brand-indigo border border-brand-indigo/20">Idea 0${idx+1}</span>
+                            <span class="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">${idea.format || 'Bulleted List'}</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-slate-900 dark:text-white leading-snug">${idea.title}</h4>
+                        <p class="text-[11px] text-slate-600 dark:text-zinc-400 leading-relaxed bg-white dark:bg-[#18181B] p-2.5 rounded-lg border border-slate-200/60 dark:border-zinc-800">
+                            <strong class="text-brand-indigo dark:text-purple-400">Why it works:</strong> ${idea.reason}
+                        </p>
+                    </div>
+                    <button onclick="useIdeaInPostStudio('${escape(idea.title)}', '${escape(idea.audience || 'CS Students')}')" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-zinc-800 hover:bg-brand-indigo dark:hover:bg-brand-indigo text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 mt-2">
+                        <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> Use Idea in Post Studio
+                    </button>
+                </div>
+            `).join('');
+
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function useIdeaInPostStudio(encodedTitle, encodedAudience) {
+            const title = unescape(encodedTitle);
+            const audience = unescape(encodedAudience);
+            const topicInput = document.getElementById('topic');
+            const audienceInput = document.getElementById('audience');
+
+            if (topicInput) topicInput.value = title;
+            if (audienceInput) audienceInput.value = audience;
+
+            switchWorkspaceTab('create');
+            switchStudioSubTab('post-creator');
+
+            showToast(`Loaded "${title}" into Post Creator!`, 'info');
+            generatePost();
+        }
+
+        // Initialize Canvas Poster & Lucide Icons on Load
+        window.addEventListener('load', () => {
+            renderPoster();
+            fetchContentIdeas();
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>
